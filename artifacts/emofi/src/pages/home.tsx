@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { Link } from "wouter";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ChevronRight, Zap, Network, Lock, Activity, Coins, ArrowRight, Brain, Heart, Sparkles, ActivitySquare, BrainCircuit, Globe, GitMerge, Shield, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,22 +14,26 @@ const Navbar = () => {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="fixed top-0 w-full z-50 bg-background/50 backdrop-blur-lg border-b border-white/5 py-4 px-6 md:px-12 flex items-center justify-between"
     >
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-primary">
-          <Activity className="w-4 h-4 text-white" />
+      <Link href="/">
+        <div className="flex items-center gap-2 cursor-pointer">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-primary">
+            <Activity className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold text-xl tracking-tight text-white">EmoFi</span>
         </div>
-        <span className="font-bold text-xl tracking-tight text-white">EmoFi</span>
-      </div>
+      </Link>
       <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-        <a href="#concept" className="hover:text-white transition-colors">Concept</a>
-        <a href="#vaults" className="hover:text-white transition-colors">RI-Vaults</a>
-        <a href="#mechanics" className="hover:text-white transition-colors">Mechanics</a>
-        <a href="#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-        <a href="#tokenomics" className="hover:text-white transition-colors">Tokenomics</a>
+        <Link href="/vaults" className="hover:text-white transition-colors">RI-Vaults</Link>
+        <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
+        <Link href="/staking" className="hover:text-white transition-colors">Staking</Link>
+        <Link href="/governance" className="hover:text-white transition-colors">Governance</Link>
+        <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
       </div>
-      <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 font-mono text-xs uppercase tracking-wider glow-primary border-none" data-testid="button-whitelist-nav">
-        Enter Protocol
-      </Button>
+      <Link href="/dashboard">
+        <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 font-mono text-xs uppercase tracking-wider glow-primary border-none" data-testid="button-whitelist-nav">
+          Enter Protocol
+        </Button>
+      </Link>
     </motion.nav>
   );
 };
@@ -83,10 +88,12 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Button size="lg" className="w-full sm:w-auto h-14 px-8 bg-white text-background hover:bg-white/90 rounded-full font-bold text-base border-none group" data-testid="button-launch-app">
-            Launch App
-            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link href="/dashboard">
+            <Button size="lg" className="w-full sm:w-auto h-14 px-8 bg-white text-background hover:bg-white/90 rounded-full font-bold text-base border-none group" data-testid="button-launch-app">
+              Launch App
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
           <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 rounded-full font-bold text-base border-white/20 bg-white/5 hover:bg-white/10 text-white backdrop-blur-md" data-testid="button-read-docs">
             Read Whitepaper
           </Button>

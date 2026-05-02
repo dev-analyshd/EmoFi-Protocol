@@ -3,13 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: EmoFi Protocol API — Reality-Integrated Emotional Finance
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User profiles and portfolios
+  - name: tokens
+    description: ERC1155 attribute tokens
+  - name: vaults
+    description: Reality-Integrated Vaults
+  - name: marketplace
+    description: Token marketplace
+  - name: staking
+    description: Staking and rewards
+  - name: governance
+    description: DAO governance
+  - name: oracle
+    description: Oracle data feeds
+  - name: ai
+    description: AI recommendations
+  - name: dashboard
+    description: Aggregated dashboard data
+
 paths:
   /healthz:
     get:
@@ -24,13 +43,1585 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── USERS ────────────────────────────────────────────────────────────────
+  /users:
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create or register a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "409":
+          description: Wallet address already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{userId}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user profile
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{userId}/portfolio:
+    get:
+      operationId: getUserPortfolio
+      tags: [users]
+      summary: Get full portfolio — balances, vaults, staking
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          description: User portfolio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserPortfolio"
+
+  /users/{userId}/activity:
+    get:
+      operationId: getUserActivity
+      tags: [users]
+      summary: Recent activity feed for user
+      parameters:
+        - $ref: "#/components/parameters/userId"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # ─── TOKENS ───────────────────────────────────────────────────────────────
+  /tokens:
+    get:
+      operationId: listTokens
+      tags: [tokens]
+      summary: List all ERC1155 attribute token types with live stats
+      responses:
+        "200":
+          description: Token list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttributeToken"
+
+  /tokens/{tokenType}:
+    get:
+      operationId: getToken
+      tags: [tokens]
+      summary: Get a specific token type with full stats
+      parameters:
+        - name: tokenType
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/TokenType"
+      responses:
+        "200":
+          description: Token details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeToken"
+
+  # ─── VAULTS ───────────────────────────────────────────────────────────────
+  /vaults:
+    get:
+      operationId: listVaults
+      tags: [vaults]
+      summary: List vaults, optionally filtered by user or token type
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: tokenType
+          in: query
+          schema:
+            $ref: "#/components/schemas/TokenType"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Vault list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultList"
+
+    post:
+      operationId: createVault
+      tags: [vaults]
+      summary: Create a new RI-Vault
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVaultBody"
+      responses:
+        "201":
+          description: Vault created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vault"
+
+  /vaults/{vaultId}:
+    get:
+      operationId: getVault
+      tags: [vaults]
+      summary: Get vault details with recent transactions and oracle feeds
+      parameters:
+        - $ref: "#/components/parameters/vaultId"
+      responses:
+        "200":
+          description: Vault details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vaults/{vaultId}/mint:
+    post:
+      operationId: mintToVault
+      tags: [vaults]
+      summary: Mint attribute tokens into a vault
+      parameters:
+        - $ref: "#/components/parameters/vaultId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VaultMintBody"
+      responses:
+        "200":
+          description: Mint result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultTransaction"
+
+  /vaults/{vaultId}/burn:
+    post:
+      operationId: burnFromVault
+      tags: [vaults]
+      summary: Burn tokens from a vault
+      parameters:
+        - $ref: "#/components/parameters/vaultId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VaultBurnBody"
+      responses:
+        "200":
+          description: Burn result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultTransaction"
+
+  /vaults/{vaultId}/transactions:
+    get:
+      operationId: getVaultTransactions
+      tags: [vaults]
+      summary: Transaction history for a vault
+      parameters:
+        - $ref: "#/components/parameters/vaultId"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VaultTransaction"
+
+  # ─── MARKETPLACE ──────────────────────────────────────────────────────────
+  /marketplace/listings:
+    get:
+      operationId: listMarketplaceListings
+      tags: [marketplace]
+      summary: List marketplace listings
+      parameters:
+        - name: tokenType
+          in: query
+          schema:
+            $ref: "#/components/schemas/TokenType"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, sold, cancelled]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Listing list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingList"
+
+    post:
+      operationId: createListing
+      tags: [marketplace]
+      summary: Create a new marketplace listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateListingBody"
+      responses:
+        "201":
+          description: Listing created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /marketplace/listings/{listingId}:
+    get:
+      operationId: getListing
+      tags: [marketplace]
+      summary: Get a specific listing
+      parameters:
+        - $ref: "#/components/parameters/listingId"
+      responses:
+        "200":
+          description: Listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /marketplace/listings/{listingId}/buy:
+    post:
+      operationId: buyListing
+      tags: [marketplace]
+      summary: Buy tokens from a marketplace listing
+      parameters:
+        - $ref: "#/components/parameters/listingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuyListingBody"
+      responses:
+        "200":
+          description: Trade completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trade"
+
+  /marketplace/listings/{listingId}/cancel:
+    post:
+      operationId: cancelListing
+      tags: [marketplace]
+      summary: Cancel a marketplace listing
+      parameters:
+        - $ref: "#/components/parameters/listingId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelListingBody"
+      responses:
+        "200":
+          description: Listing cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /marketplace/stats:
+    get:
+      operationId: getMarketplaceStats
+      tags: [marketplace]
+      summary: Marketplace volume and stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceStats"
+
+  # ─── STAKING ──────────────────────────────────────────────────────────────
+  /staking/positions:
+    get:
+      operationId: listStakingPositions
+      tags: [staking]
+      summary: List staking positions for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Staking positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StakingPosition"
+
+    post:
+      operationId: stakeTokens
+      tags: [staking]
+      summary: Stake tokens to earn rewards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StakeBody"
+      responses:
+        "201":
+          description: Staking position created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StakingPosition"
+
+  /staking/positions/{positionId}/unstake:
+    post:
+      operationId: unstakeTokens
+      tags: [staking]
+      summary: Unstake and collect rewards
+      parameters:
+        - $ref: "#/components/parameters/positionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnstakeBody"
+      responses:
+        "200":
+          description: Unstake result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StakingPosition"
+
+  /staking/positions/{positionId}/claim:
+    post:
+      operationId: claimRewards
+      tags: [staking]
+      summary: Claim pending staking rewards
+      parameters:
+        - $ref: "#/components/parameters/positionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimBody"
+      responses:
+        "200":
+          description: Claim result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RewardClaim"
+
+  /staking/rates:
+    get:
+      operationId: getStakingRates
+      tags: [staking]
+      summary: Current staking reward rates for all pairs
+      responses:
+        "200":
+          description: Staking rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StakingRate"
+
+  # ─── GOVERNANCE ───────────────────────────────────────────────────────────
+  /governance/proposals:
+    get:
+      operationId: listProposals
+      tags: [governance]
+      summary: List governance proposals
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, passed, rejected, executed, pending]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: Proposals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalList"
+
+    post:
+      operationId: createProposal
+      tags: [governance]
+      summary: Create a new governance proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProposalBody"
+      responses:
+        "201":
+          description: Proposal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proposal"
+
+  /governance/proposals/{proposalId}:
+    get:
+      operationId: getProposal
+      tags: [governance]
+      summary: Proposal details with vote breakdown
+      parameters:
+        - $ref: "#/components/parameters/proposalId"
+      responses:
+        "200":
+          description: Proposal detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalDetail"
+
+  /governance/proposals/{proposalId}/vote:
+    post:
+      operationId: castVote
+      tags: [governance]
+      summary: Cast a vote on a proposal
+      parameters:
+        - $ref: "#/components/parameters/proposalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteBody"
+      responses:
+        "200":
+          description: Vote recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoteResult"
+
+  /governance/stats:
+    get:
+      operationId: getGovernanceStats
+      tags: [governance]
+      summary: DAO governance stats
+      responses:
+        "200":
+          description: Governance stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovernanceStats"
+
+  # ─── ORACLE ───────────────────────────────────────────────────────────────
+  /oracle/feeds:
+    get:
+      operationId: listOracleFeeds
+      tags: [oracle]
+      summary: List recent oracle data feeds
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: feedType
+          in: query
+          schema:
+            $ref: "#/components/schemas/OracleFeedType"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Oracle feeds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OracleFeed"
+
+    post:
+      operationId: submitOracleFeed
+      tags: [oracle]
+      summary: Submit a new oracle data point
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitOracleFeedBody"
+      responses:
+        "201":
+          description: Feed submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OracleFeed"
+
+  # ─── AI ───────────────────────────────────────────────────────────────────
+  /ai/recommendations/{userId}:
+    get:
+      operationId: getAiRecommendations
+      tags: [ai]
+      summary: AI-driven vault and marketplace recommendations
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiRecommendation"
+
+  # ─── DASHBOARD ────────────────────────────────────────────────────────────
+  /dashboard/{userId}:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Aggregated user dashboard
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+
+  /dashboard/protocol/stats:
+    get:
+      operationId: getProtocolStats
+      tags: [dashboard]
+      summary: Protocol-wide stats — TVL, active vaults, total trades
+      responses:
+        "200":
+          description: Protocol stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProtocolStats"
+
 components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+    vaultId:
+      name: vaultId
+      in: path
+      required: true
+      schema:
+        type: integer
+    listingId:
+      name: listingId
+      in: path
+      required: true
+      schema:
+        type: integer
+    proposalId:
+      name: proposalId
+      in: path
+      required: true
+      schema:
+        type: integer
+    positionId:
+      name: positionId
+      in: path
+      required: true
+      schema:
+        type: integer
+
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error]
+
+    TokenType:
+      type: string
+      enum:
+        - happiness
+        - sadness
+        - beautiful
+        - good_thought
+        - bad_thought
+        - intelligence
+        - talent
+        - spirituality
+        - situational
+
+    TransactionType:
+      type: string
+      enum: [mint, burn, stake, unstake, transfer, buy, sell]
+
+    ProposalType:
+      type: string
+      enum:
+        - new_attribute
+        - staking_adjustment
+        - marketplace_fee
+        - oracle_policy
+        - bear_market_incentive
+        - general
+
+    ProposalStatus:
+      type: string
+      enum: [pending, active, passed, rejected, executed]
+
+    OracleFeedType:
+      type: string
+      enum:
+        - mood
+        - achievement
+        - talent_score
+        - intelligence_score
+        - spiritual_index
+        - situational_event
+
+    ListingStatus:
+      type: string
+      enum: [active, sold, cancelled]
+
+    # ── User ──────────────────────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        walletAddress:
+          type: string
+        username:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+        emoBalance:
+          type: number
+        reputationScore:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, walletAddress, username, emoBalance, reputationScore, createdAt]
+
+    CreateUserBody:
+      type: object
+      properties:
+        walletAddress:
+          type: string
+        username:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        bio:
+          type: string
+          nullable: true
+      required: [walletAddress, username]
+
+    UserPortfolio:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        tokenBalances:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserTokenBalance"
+        vaults:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vault"
+        stakingPositions:
+          type: array
+          items:
+            $ref: "#/components/schemas/StakingPosition"
+        totalPortfolioValue:
+          type: number
+        pendingRewards:
+          type: number
+      required: [user, tokenBalances, vaults, stakingPositions, totalPortfolioValue, pendingRewards]
+
+    UserTokenBalance:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        balance:
+          type: number
+        lockedBalance:
+          type: number
+      required: [id, userId, tokenType, balance, lockedBalance]
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        txType:
+          $ref: "#/components/schemas/TransactionType"
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+          nullable: true
+        amount:
+          type: number
+          nullable: true
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, txType, description, createdAt]
+
+    # ── Tokens ────────────────────────────────────────────────────────────
+    AttributeToken:
+      type: object
+      properties:
+        id:
+          type: integer
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        name:
+          type: string
+        description:
+          type: string
+        currentSupply:
+          type: number
+        maxSupply:
+          type: number
+          nullable: true
+        priceEmo:
+          type: number
+        color:
+          type: string
+        icon:
+          type: string
+        positiveAttribute:
+          type: boolean
+        totalStaked:
+          type: number
+        totalBurned:
+          type: number
+        volume24h:
+          type: number
+      required:
+        - id
+        - tokenType
+        - name
+        - description
+        - currentSupply
+        - priceEmo
+        - color
+        - icon
+        - positiveAttribute
+        - totalStaked
+        - totalBurned
+        - volume24h
+
+    # ── Vaults ────────────────────────────────────────────────────────────
+    Vault:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        description:
+          type: string
+          nullable: true
+        balance:
+          type: number
+        stakedBalance:
+          type: number
+        oracleScore:
+          type: number
+          nullable: true
+        isPublic:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, name, tokenType, balance, stakedBalance, isPublic, createdAt, updatedAt]
+
+    VaultDetail:
+      allOf:
+        - $ref: "#/components/schemas/Vault"
+        - type: object
+          properties:
+            user:
+              $ref: "#/components/schemas/User"
+            recentTransactions:
+              type: array
+              items:
+                $ref: "#/components/schemas/VaultTransaction"
+            oracleFeeds:
+              type: array
+              items:
+                $ref: "#/components/schemas/OracleFeed"
+          required: [user, recentTransactions, oracleFeeds]
+
+    VaultList:
+      type: object
+      properties:
+        vaults:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vault"
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+      required: [vaults, total, offset, limit]
+
+    CreateVaultBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        description:
+          type: string
+          nullable: true
+        isPublic:
+          type: boolean
+          default: true
+      required: [userId, name, tokenType]
+
+    VaultMintBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+        amount:
+          type: number
+        note:
+          type: string
+          nullable: true
+      required: [userId, amount]
+
+    VaultBurnBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+        amount:
+          type: number
+        reason:
+          type: string
+          nullable: true
+      required: [userId, amount]
+
+    VaultTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        vaultId:
+          type: integer
+        userId:
+          type: integer
+        txType:
+          $ref: "#/components/schemas/TransactionType"
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        amount:
+          type: number
+        balanceAfter:
+          type: number
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, vaultId, userId, txType, tokenType, amount, balanceAfter, createdAt]
+
+    # ── Marketplace ───────────────────────────────────────────────────────
+    Listing:
+      type: object
+      properties:
+        id:
+          type: integer
+        sellerId:
+          type: integer
+        seller:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        amount:
+          type: number
+        remainingAmount:
+          type: number
+        pricePerUnit:
+          type: number
+        status:
+          $ref: "#/components/schemas/ListingStatus"
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, sellerId, tokenType, amount, remainingAmount, pricePerUnit, status, createdAt]
+
+    ListingList:
+      type: object
+      properties:
+        listings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Listing"
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+      required: [listings, total, offset, limit]
+
+    CreateListingBody:
+      type: object
+      properties:
+        sellerId:
+          type: integer
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        amount:
+          type: number
+        pricePerUnit:
+          type: number
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [sellerId, tokenType, amount, pricePerUnit]
+
+    BuyListingBody:
+      type: object
+      properties:
+        buyerId:
+          type: integer
+        amount:
+          type: number
+      required: [buyerId, amount]
+
+    CancelListingBody:
+      type: object
+      properties:
+        sellerId:
+          type: integer
+      required: [sellerId]
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: integer
+        listingId:
+          type: integer
+        buyerId:
+          type: integer
+        sellerId:
+          type: integer
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        amount:
+          type: number
+        pricePerUnit:
+          type: number
+        totalPrice:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, listingId, buyerId, sellerId, tokenType, amount, pricePerUnit, totalPrice, createdAt]
+
+    MarketplaceStats:
+      type: object
+      properties:
+        totalVolume:
+          type: number
+        volume24h:
+          type: number
+        totalTrades:
+          type: integer
+        trades24h:
+          type: integer
+        activeListings:
+          type: integer
+        topTokenByVolume:
+          $ref: "#/components/schemas/TokenType"
+          nullable: true
+        tokenVolumes:
+          type: array
+          items:
+            type: object
+            properties:
+              tokenType:
+                $ref: "#/components/schemas/TokenType"
+              volume:
+                type: number
+              tradeCount:
+                type: integer
+            required: [tokenType, volume, tradeCount]
+      required: [totalVolume, volume24h, totalTrades, trades24h, activeListings, tokenVolumes]
+
+    # ── Staking ───────────────────────────────────────────────────────────
+    StakingPosition:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        stakedTokenType:
+          $ref: "#/components/schemas/TokenType"
+        rewardTokenType:
+          $ref: "#/components/schemas/TokenType"
+        amountStaked:
+          type: number
+        rewardRate:
+          type: number
+        pendingRewards:
+          type: number
+        totalEarned:
+          type: number
+        isActive:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+        lastClaimedAt:
+          type: string
+          format: date-time
+          nullable: true
+        unstakedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, userId, stakedTokenType, rewardTokenType, amountStaked, rewardRate, pendingRewards, totalEarned, isActive, startedAt]
+
+    StakeBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+        stakedTokenType:
+          $ref: "#/components/schemas/TokenType"
+        rewardTokenType:
+          $ref: "#/components/schemas/TokenType"
+        amount:
+          type: number
+      required: [userId, stakedTokenType, rewardTokenType, amount]
+
+    UnstakeBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+      required: [userId]
+
+    ClaimBody:
+      type: object
+      properties:
+        userId:
+          type: integer
+      required: [userId]
+
+    RewardClaim:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        positionId:
+          type: integer
+          nullable: true
+        amount:
+          type: number
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+        source:
+          type: string
+        claimedAt:
+          type: string
+          format: date-time
+      required: [id, userId, amount, tokenType, source, claimedAt]
+
+    StakingRate:
+      type: object
+      properties:
+        stakedTokenType:
+          $ref: "#/components/schemas/TokenType"
+        rewardTokenType:
+          $ref: "#/components/schemas/TokenType"
+        ratePerDay:
+          type: number
+        totalStaked:
+          type: number
+        apr:
+          type: number
+      required: [stakedTokenType, rewardTokenType, ratePerDay, totalStaked, apr]
+
+    # ── Governance ────────────────────────────────────────────────────────
+    Proposal:
+      type: object
+      properties:
+        id:
+          type: integer
+        proposerId:
+          type: integer
+        proposer:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        proposalType:
+          $ref: "#/components/schemas/ProposalType"
+        status:
+          $ref: "#/components/schemas/ProposalStatus"
+        forVotes:
+          type: number
+        againstVotes:
+          type: number
+        quorumRequired:
+          type: number
+        totalVoters:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        executedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - proposerId
+        - title
+        - description
+        - proposalType
+        - status
+        - forVotes
+        - againstVotes
+        - quorumRequired
+        - totalVoters
+        - createdAt
+        - endsAt
+
+    ProposalDetail:
+      allOf:
+        - $ref: "#/components/schemas/Proposal"
+        - type: object
+          properties:
+            votes:
+              type: array
+              items:
+                $ref: "#/components/schemas/VoteResult"
+          required: [votes]
+
+    ProposalList:
+      type: object
+      properties:
+        proposals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Proposal"
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+      required: [proposals, total, offset, limit]
+
+    CreateProposalBody:
+      type: object
+      properties:
+        proposerId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        proposalType:
+          $ref: "#/components/schemas/ProposalType"
+        durationDays:
+          type: integer
+          default: 7
+      required: [proposerId, title, description, proposalType]
+
+    VoteResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        proposalId:
+          type: integer
+        voterId:
+          type: integer
+        voter:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        support:
+          type: boolean
+        weight:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, proposalId, voterId, support, weight, createdAt]
+
+    VoteBody:
+      type: object
+      properties:
+        voterId:
+          type: integer
+        support:
+          type: boolean
+        weight:
+          type: number
+      required: [voterId, support, weight]
+
+    GovernanceStats:
+      type: object
+      properties:
+        totalEmoSupply:
+          type: number
+        circulatingSupply:
+          type: number
+        totalProposals:
+          type: integer
+        activeProposals:
+          type: integer
+        passedProposals:
+          type: integer
+        uniqueVoters:
+          type: integer
+        averageTurnout:
+          type: number
+      required:
+        - totalEmoSupply
+        - circulatingSupply
+        - totalProposals
+        - activeProposals
+        - passedProposals
+        - uniqueVoters
+        - averageTurnout
+
+    # ── Oracle ────────────────────────────────────────────────────────────
+    OracleFeed:
+      type: object
+      properties:
+        id:
+          type: integer
+        feedType:
+          $ref: "#/components/schemas/OracleFeedType"
+        userId:
+          type: integer
+          nullable: true
+        value:
+          type: number
+        source:
+          type: string
+        verified:
+          type: boolean
+        metadata:
+          type: object
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, feedType, value, source, verified, createdAt]
+
+    SubmitOracleFeedBody:
+      type: object
+      properties:
+        feedType:
+          $ref: "#/components/schemas/OracleFeedType"
+        userId:
+          type: integer
+          nullable: true
+        value:
+          type: number
+        source:
+          type: string
+        metadata:
+          type: object
+          nullable: true
+      required: [feedType, value, source]
+
+    # ── AI ────────────────────────────────────────────────────────────────
+    AiRecommendation:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        recommendationType:
+          type: string
+          enum:
+            - vault_action
+            - stake_opportunity
+            - marketplace_alert
+            - bear_market_strategy
+            - portfolio_rebalance
+        title:
+          type: string
+        description:
+          type: string
+        confidence:
+          type: number
+        tokenType:
+          $ref: "#/components/schemas/TokenType"
+          nullable: true
+        actionUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, recommendationType, title, description, confidence, createdAt]
+
+    # ── Dashboard ─────────────────────────────────────────────────────────
+    Dashboard:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        portfolioValue:
+          type: number
+        portfolioChange24h:
+          type: number
+        totalEmoEarned:
+          type: number
+        pendingRewards:
+          type: number
+        activeVaults:
+          type: integer
+        activeStakes:
+          type: integer
+        tokenBalances:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserTokenBalance"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+        aiRecommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiRecommendation"
+        oracleScore:
+          type: number
+          nullable: true
+      required:
+        - user
+        - portfolioValue
+        - portfolioChange24h
+        - totalEmoEarned
+        - pendingRewards
+        - activeVaults
+        - activeStakes
+        - tokenBalances
+        - recentActivity
+        - aiRecommendations
+
+    ProtocolStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalVaults:
+          type: integer
+        totalValueLocked:
+          type: number
+        totalTrades:
+          type: integer
+        totalVolume:
+          type: number
+        totalEmoDistributed:
+          type: number
+        activeProposals:
+          type: integer
+        tokenSupplies:
+          type: array
+          items:
+            type: object
+            properties:
+              tokenType:
+                $ref: "#/components/schemas/TokenType"
+              supply:
+                type: number
+              price:
+                type: number
+            required: [tokenType, supply, price]
+      required:
+        - totalUsers
+        - totalVaults
+        - totalValueLocked
+        - totalTrades
+        - totalVolume
+        - totalEmoDistributed
+        - activeProposals
+        - tokenSupplies

@@ -4,6 +4,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import Vaults from "@/pages/vaults";
+import Marketplace from "@/pages/marketplace";
+import Staking from "@/pages/staking";
+import Governance from "@/pages/governance";
+import Dashboard from "@/pages/dashboard";
 import React, { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -12,6 +17,11 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/vaults" component={Vaults} />
+      <Route path="/marketplace" component={Marketplace} />
+      <Route path="/staking" component={Staking} />
+      <Route path="/governance" component={Governance} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>
   );
