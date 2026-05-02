@@ -11,6 +11,26 @@ env = { "CI" = "true" }
 [workflows]
 runButton = "Project"
 
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Push to GitHub"
+
+[[workflows.workflow]]
+name = "Push to GitHub"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash scripts/push-github.sh"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
 [agent]
 stack = "PNPM_WORKSPACE"
 expertMode = true
@@ -30,3 +50,8 @@ externalPort = 80
 [[ports]]
 localPort = 20267
 externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+DEPLOYER_KEY = "0x97302cdb31f3c50d93ba0ca16db4d3ed5aa46113825a1de6ca82c121a9cbc524"
