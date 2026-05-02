@@ -42,6 +42,12 @@ const config: HardhatUserConfig = {
       chainId: 1,
       gasPrice: "auto",
     },
+    "arbitrum-sepolia": {
+      url: "https://sepolia-rollup.arbitrum.io/rpc",
+      accounts: [DEPLOYER_KEY],
+      chainId: 421614,
+      gasPrice: "auto",
+    },
     "base-sepolia": {
       url: "https://sepolia.base.org",
       accounts: [DEPLOYER_KEY],

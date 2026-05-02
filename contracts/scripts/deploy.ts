@@ -24,15 +24,15 @@ async function main() {
   const chainId = (await ethers.provider.getNetwork()).chainId;
   const balance = await ethers.provider.getBalance(deployer.address);
 
-  // On non-local networks, all addresses must be different (configured via env)
+  const isMainnet = network.name === "mainnet" || network.name === "base";
   const isLocalNetwork = network.name === "hardhat" || network.name === "localhost";
 
-  // For production, these should be separate multisig addresses
-  const dao       = isLocalNetwork ? daoTreasury?.address  ?? deployer.address : process.env.DAO_TREASURY!;
-  const team      = isLocalNetwork ? teamMultisig?.address ?? deployer.address : process.env.TEAM_MULTISIG!;
-  const liquidity = isLocalNetwork ? liquidityPool?.address ?? deployer.address : process.env.LIQUIDITY_POOL!;
-  const reserve   = isLocalNetwork ? strategicReserve?.address ?? deployer.address : process.env.STRATEGIC_RESERVE!;
-  const feeRecipient = isLocalNetwork ? deployer.address : (process.env.FEE_RECIPIENT ?? deployer.address);
+  // On mainnet, require real multisig addresses. On testnets/local, use deployer as fallback.
+  const dao       = isMainnet ? process.env.DAO_TREASURY!       : (process.env.DAO_TREASURY       ?? deployer.address);
+  const team      = isMainnet ? process.env.TEAM_MULTISIG!      : (process.env.TEAM_MULTISIG      ?? deployer.address);
+  const liquidity = isMainnet ? process.env.LIQUIDITY_POOL!     : (process.env.LIQUIDITY_POOL     ?? deployer.address);
+  const reserve   = isMainnet ? process.env.STRATEGIC_RESERVE!  : (process.env.STRATEGIC_RESERVE  ?? deployer.address);
+  const feeRecipient = process.env.FEE_RECIPIENT ?? deployer.address;
 
   console.log("\n==============================");
   console.log("  EmoFi Protocol Deployment");

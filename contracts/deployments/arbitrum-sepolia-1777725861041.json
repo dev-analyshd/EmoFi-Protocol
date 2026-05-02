@@ -1,0 +1,15 @@
+{
+  "network": "arbitrum-sepolia",
+  "chainId": 421614,
+  "deployer": "0x4e98F2ccb2c55AdCa6fA5AdbaF63248B238A23A1",
+  "timestamp": "2026-05-02T12:43:58.047Z",
+  "contracts": {
+    "EMOToken": "0x7aFCB5eBD0e756D4Dc325f52BA30C950535cb0b6",
+    "EmoFiToken": "0xc1fd86F45be1819F4EDcFaCE306FA39ac3013D96",
+    "TimelockController": "0x0ABf588d90Cc2108808082250fdCB4C87d25ef6D",
+    "RIVault": "0x860C5FD9b59bCf7c0B3314ceB13a32C062A02CfF",
+    "EmoMarketplace": "0x1D631093612f78c9A82062CE8feE16E5275CE53F",
+    "EmoStaking": "0x6f6a3bccffaa23FF623864AC237739A0425DEf97",
+    "EmoGovernor": "0x3317537831eDE8E7B66cc6C9C62D240d273eEAc7"
+  }
+}
