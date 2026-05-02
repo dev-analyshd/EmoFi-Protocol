@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "aOhmpRE2ByX9Q0_kjRN73"
+uri = "file://artifacts/emofi/public/images/hero-bg.png"
+type = "image"
+title = "Abstract neural space hero background"
+
+[[generated]]
+id = "5RhhD7I7gQSuxA_nHu9NL"
+uri = "file://artifacts/emofi/public/images/vault.png"
+type = "image"
+title = "Abstract futuristic vault"
+
+[[generated]]
+id = "5N5CEgJ1appNWLJ9UHNI-"
+uri = "file://artifacts/emofi/public/images/oracle.png"
+type = "image"
+title = "Oracle data streams"
