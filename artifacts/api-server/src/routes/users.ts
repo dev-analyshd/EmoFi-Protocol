@@ -20,6 +20,17 @@ router.post("/users", async (req, res) => {
   res.status(201).json(user);
 });
 
+router.get("/users/wallet/:address", async (req, res) => {
+  const address = req.params.address?.toLowerCase();
+  if (!address || !/^0x[0-9a-f]{40}$/i.test(address)) {
+    res.status(400).json({ error: "Invalid address" });
+    return;
+  }
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.walletAddress, address)).limit(1);
+  if (!user) { res.status(404).json({ error: "Not found", message: "No user registered for this address" }); return; }
+  res.json({ ...user, emoBalance: Number(user.emoBalance) });
+});
+
 router.get("/users/:userId", async (req, res) => {
   const params = GetUserParams.safeParse({ userId: Number(req.params.userId) });
   if (!params.success) { res.status(400).json({ error: "Invalid userId" }); return; }

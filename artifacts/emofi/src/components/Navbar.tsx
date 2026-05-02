@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Activity, LayoutDashboard, Database, ShoppingCart, Coins, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { WalletButton } from "@/components/WalletButton";
 
 const Navbar = () => {
   const [location] = useLocation();
@@ -42,9 +42,7 @@ const Navbar = () => {
         ))}
       </div>
 
-      <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 font-mono text-xs uppercase tracking-wider glow-primary border-none">
-        Connect Wallet
-      </Button>
+      <WalletButton />
     </motion.nav>
   );
 };
