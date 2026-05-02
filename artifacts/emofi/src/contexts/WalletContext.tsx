@@ -71,7 +71,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!address) { setUserId(null); return; }
     setIsLoadingUser(true);
-    getOrCreateUser(address).then(id => {
+    getOrCreateUser(address.toLowerCase()).then(id => {
       setUserId(id);
       setIsLoadingUser(false);
     });

@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ChevronRight, Zap, Network, Lock, Activity, Coins, ArrowRight, Brain, Heart, Sparkles, ActivitySquare, BrainCircuit, Globe, GitMerge, Shield, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WalletButton } from "@/components/WalletButton";
 
 // --- Components ---
 
@@ -29,11 +30,7 @@ const Navbar = () => {
         <Link href="/governance" className="hover:text-white transition-colors">Governance</Link>
         <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
       </div>
-      <Link href="/dashboard">
-        <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 font-mono text-xs uppercase tracking-wider glow-primary border-none" data-testid="button-whitelist-nav">
-          Enter Protocol
-        </Button>
-      </Link>
+      <WalletButton />
     </motion.nav>
   );
 };

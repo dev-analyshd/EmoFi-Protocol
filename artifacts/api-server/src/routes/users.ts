@@ -11,12 +11,13 @@ router.post("/users", async (req, res) => {
     res.status(400).json({ error: "Invalid request", message: body.error.message });
     return;
   }
-  const existing = await db.select().from(usersTable).where(eq(usersTable.walletAddress, body.data.walletAddress)).limit(1);
+  const normalizedAddress = body.data.walletAddress.toLowerCase();
+  const existing = await db.select().from(usersTable).where(eq(usersTable.walletAddress, normalizedAddress)).limit(1);
   if (existing.length > 0) {
     res.status(409).json({ error: "Conflict", message: "Wallet address already registered" });
     return;
   }
-  const [user] = await db.insert(usersTable).values(body.data).returning();
+  const [user] = await db.insert(usersTable).values({ ...body.data, walletAddress: normalizedAddress }).returning();
   res.status(201).json(user);
 });
 
