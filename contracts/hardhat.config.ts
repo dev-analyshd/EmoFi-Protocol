@@ -5,6 +5,7 @@ import "hardhat-gas-reporter";
 
 const DEPLOYER_KEY = process.env.DEPLOYER_KEY || "0x0000000000000000000000000000000000000000000000000000000000000001";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
+const ARBISCAN_API_KEY = process.env.ARBISCAN_API_KEY || "";
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY || "";
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY || "";
 
@@ -63,10 +64,19 @@ const config: HardhatUserConfig = {
   },
 
   etherscan: {
-    apiKey: {
-      mainnet: ETHERSCAN_API_KEY,
-      sepolia: ETHERSCAN_API_KEY,
-    },
+    // Etherscan V2 unified API key (single key covers all chains)
+    apiKey: ARBISCAN_API_KEY || ETHERSCAN_API_KEY,
+    customChains: [
+      {
+        network: "arbitrum-sepolia",
+        chainId: 421614,
+        urls: {
+          // Etherscan V2 unified endpoint with chainid param
+          apiURL:     "https://api.etherscan.io/v2/api?chainid=421614",
+          browserURL: "https://sepolia.arbiscan.io",
+        },
+      },
+    ],
   },
 
   gasReporter: {
