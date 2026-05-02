@@ -10,9 +10,9 @@ fi
 REPO="https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/dev-analyshd/EmoFi-Protocol.git"
 BRANCH="${1:-main}"
 
-echo "🔧 Configuring git identity..."
-git config user.email "emofi-bot@emofi.io"
-git config user.name "EmoFi Deploy Bot"
+echo "🔧 Configuring git identity (global)..."
+git config --global user.email "emofi-bot@emofi.io"
+git config --global user.name "EmoFi Deploy Bot"
 
 echo "📡 Pushing branch '$BRANCH' to GitHub (force)..."
 git push --force "$REPO" "$BRANCH"

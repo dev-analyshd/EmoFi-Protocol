@@ -26,6 +26,10 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 31337,
       allowUnlimitedContractSize: false,
+      accounts: {
+        count: 55,
+        accountsBalance: "100000000000000000000000", // 100,000 ETH each
+      },
     },
     localhost: {
       url: "http://127.0.0.1:8545",
