@@ -42,6 +42,7 @@ async function main() {
   const provider = ethers.provider;
   const selected = wallets.slice(0, 50);
   const userWallets = selected.map((w) => new ethers.Wallet(w.privateKey, provider));
+  const [deployer] = await ethers.getSigners();
 
   const emo = new ethers.Contract(ADDR.EMOToken, ERC20_ABI, provider);
   const efi = new ethers.Contract(ADDR.EmoFiToken, ERC1155_ABI, provider);
@@ -60,6 +61,13 @@ async function main() {
     const marketplace = mkt.connect(w);
     const staking = stk.connect(w);
     const vault = vlt.connect(w);
+
+    const bal = await provider.getBalance(w.address);
+    if (bal < ethers.parseEther("0.001")) {
+      const fund = await deployer.sendTransaction({ to: w.address, value: ethers.parseEther("0.0015") });
+      txs.push(fund.hash);
+      await fund.wait();
+    }
 
     const a1 = await token.setApprovalForAll(ADDR.EmoStaking, true);
     txs.push(a1.hash);
@@ -83,6 +91,11 @@ async function main() {
 
     const listingId = await mkt.connect(provider).listingCount();
     listingIds.push(listingId);
+    if (listingId > 0n) {
+      const b1 = await marketplace.buy(listingId, 1n);
+      txs.push(b1.hash);
+      await b1.wait();
+    }
 
     const v1 = await vault.createVault(0n, `Wallet ${i} Vault`, true);
     txs.push(v1.hash);
